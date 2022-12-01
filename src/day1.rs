@@ -1,9 +1,13 @@
-fn get_max_calories(calories_string: &str) -> i32 {
-    return calories_string
+fn get_max_calories(calories_string: &str, amount: usize) -> i32 {
+    let mut calorie_lists: Vec<i32> = calories_string
         .split("\n\n")
         .map(|elf_list_string| get_calories_of_elf(elf_list_string))
-        .max()
-        .unwrap_or(0)
+        .collect();
+
+    calorie_lists.sort();
+    calorie_lists.reverse();
+
+    return calorie_lists.into_iter().take(amount).sum()
 }
 
 fn get_calories_of_elf(elf_calories_string: &str) -> i32 {
@@ -34,7 +38,7 @@ mod tests {
 9000
 
 10000";
-        assert_eq!(get_max_calories(calories_string), 24000);
+        assert_eq!(get_max_calories(calories_string, 1), 24000);
     }
 
     #[test]
@@ -54,7 +58,7 @@ mod tests {
 9000
 
 100000";
-        assert_eq!(get_max_calories(calories_string), 100000);
+        assert_eq!(get_max_calories(calories_string, 1), 100000);
     }
 
     #[test]
@@ -76,12 +80,33 @@ mod tests {
 100000
 blabla
 ";
-        assert_eq!(get_max_calories(calories_string), 100000);
+        assert_eq!(get_max_calories(calories_string, 1), 100000);
     }
 
     #[test]
     fn calorie_count_nothing_found_max_is_0() {
         let calories_string = "";
-        assert_eq!(get_max_calories(calories_string), 0);
+        assert_eq!(get_max_calories(calories_string, 1), 0);
+    }
+
+    #[test]
+    fn calorie_count_multiple() {
+        let calories_string = "
+1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+100000
+";
+        assert_eq!(get_max_calories(calories_string, 2), 124000);
     }
 }
