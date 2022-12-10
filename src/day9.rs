@@ -135,6 +135,6 @@ mod tests {
 
     #[test]
     fn large_test() {
-        assert_eq!(count_visited_positions(fs::read_to_string("src/day9/test_large.txt").unwrap().as_str(), &mut vec![Vector2{x: 0, y: 0}; 10]), 13);
+        assert_eq!(count_visited_positions(fs::read_to_string("src/day9/test_large.txt").unwrap().as_str(), &mut vec![Vector2{x: 0, y: 0}; 10]), 2536);
     }
 }
