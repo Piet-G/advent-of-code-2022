@@ -116,3 +116,59 @@ impl ops::Mul<i32> for Vector2i {
         }
     }
 }
+
+
+#[derive(Eq, PartialEq, Hash, Clone, Copy)]
+pub struct Vector2i64 {
+    pub(crate) x: i64,
+    pub(crate) y: i64
+}
+
+impl Vector2i64 {
+    pub fn get_manhattan_distance(self, other: Vector2i64) -> i64 {
+        let absolute = (self - other).abs();
+
+        absolute.x + absolute.y
+    }
+
+    fn abs(&self) -> Vector2i64 {
+        return Vector2i64 {
+            x: self.x.abs(),
+            y: self.y.abs()
+        }
+    }
+
+}
+
+impl ops::Add<Vector2i64> for Vector2i64 {
+    type Output = Vector2i64;
+
+    fn add(self, other: Vector2i64) -> Vector2i64 {
+        return Vector2i64 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl ops::Sub<Vector2i64> for Vector2i64 {
+    type Output = Vector2i64;
+
+    fn sub(self, other: Vector2i64) -> Vector2i64 {
+        return Vector2i64 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl ops::Mul<i64> for Vector2i64 {
+    type Output = Vector2i64;
+
+    fn mul(self, other: i64) -> Vector2i64 {
+        return Vector2i64 {
+            x: self.x * other,
+            y: self.y * other,
+        }
+    }
+}
