@@ -4,10 +4,12 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::repeat;
 use std::ops::Add;
 use itertools::{interleave, Itertools};
-use crate::vector2::{Vector2i, Vector2i64};
+use crate::vector2::{Vector2, Vector2i, Vector2i64};
 
 type Shape = Vec<Vector2i64>;
 type Jet = Vector2i64;
+
+type SeenShapes = HashMap<(Vec<Vector2i64>, usize, usize), (i64, usize)>;
 
 struct Tunnel {
     grid: HashSet<Vector2i64>,
@@ -89,14 +91,18 @@ fn move_shape(shape: Shape, jet: Vector2i64, tunnel: &mut Tunnel, i: usize) -> O
 
 fn drop_shape(shape: Shape, movements: &mut dyn Iterator<Item=Vector2i64>, tunnel: &mut Tunnel, i: usize) {
     let mut resulting_shape = Some(shape.into_iter().map(|pos| pos.add(Vector2i64 { x: 2, y: tunnel.height + 4 })).collect());
-
     while resulting_shape.is_some() {
-        resulting_shape = move_shape(resulting_shape.unwrap(), movements.next().unwrap(), tunnel, i)
+        for mov in [movements.next().unwrap(), Vector2i64{x: 0, y: -1}]{
+            resulting_shape = move_shape(resulting_shape.unwrap(), mov, tunnel, i)
+        }
     }
 }
 
 fn drop_shapes(shapes: Vec<Shape>, jets: Vec<Jet>, dimension: i64, amount: usize) -> i64 {
-    let mut jet_iterator = interleave(LoopingIterator { vector: jets, next: 0 }, repeat(Vector2i64 { x: 0, y: -1 }));
+    let mut seen_shapes: SeenShapes = HashMap::new();
+    let len_jet = jets.len();
+    let len_snake = shapes.len();
+    let mut jet_iterator = LoopingIterator { vector: jets, next: 0 };
     let shape_iterator = LoopingIterator { vector: shapes, next: 0 };
     let mut tunnel = Tunnel {
         grid: HashSet::new(),
@@ -113,10 +119,33 @@ fn drop_shapes(shapes: Vec<Shape>, jets: Vec<Jet>, dimension: i64, amount: usize
         if(i % 10000 == 0) {
             println!("Completed {}/{}", i, amount)
         }
+
         drop_shape(shape, &mut jet_iterator, &mut tunnel, i);
 
-        if((0..dimension).map(|x| Vector2i64{x, y: tunnel.height}).all(|pos| !tunnel.is_free(pos))){
-            println!("Exact!");
+        let last_two_rows: Vec<Vec<_>> = (0..dimension).map(|x| (0..=1).map(|y_offset| Vector2i64{x, y: tunnel.height - y_offset}).collect()).collect();
+
+        if(i == (2471 + 449)) {
+            let a = "a";
+        }
+
+        if last_two_rows.iter().all(|positions| !tunnel.is_free(positions[0]) || !tunnel.is_free(positions[1])) {
+            let to_obj: (Vec<_>, usize, usize) = (last_two_rows.into_iter().map(|positions| positions[0].add(Vector2i64{x: 0, y: -tunnel.height})).collect(), (jet_iterator.next) % len_jet, i % len_snake);
+
+            println!("Completed {}/{}, shape is suitable.", i, amount);
+
+            if seen_shapes.contains_key(&to_obj) {
+                println!("Found");
+
+                let segment_height = (tunnel.height - seen_shapes.get(&to_obj).unwrap().0);
+                let segment_count = (amount - i) / (i - seen_shapes.get(&to_obj).unwrap().1);
+                let total_height = segment_count * segment_height as usize;
+                let remaining_after_segment = (amount - i) % (i - seen_shapes.get(&to_obj).unwrap().1);
+                let a = "";
+            }
+            else {
+                println!("Inserted {}", to_obj.1);
+                seen_shapes.insert(to_obj, (tunnel.height, i));
+            }
         }
     }
 
@@ -167,7 +196,14 @@ mod tests {
     fn large_test() {
         let jets = parse_jets(include_str!("day17/test_large.txt"));
 
-        assert_eq!(drop_shapes(get_shapes(), jets, 7, 2022), 0);
+        assert_eq!(drop_shapes(get_shapes(), jets, 7, 2022), 3219);
+    }
+
+    #[test]
+    fn simple_test_2() {
+        let jets = parse_jets(include_str!("day17/test_simple.txt"));
+        let shapes = get_shapes();
+        assert_eq!(drop_shapes(shapes, jets, 7, 1000000000000), 3068);
     }
 
     #[test]
