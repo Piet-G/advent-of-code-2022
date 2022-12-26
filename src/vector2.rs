@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::ops;
 
 #[derive(Eq, PartialEq, Hash, Clone, Copy)]
@@ -82,6 +83,12 @@ impl Vector2i {
         }
     }
 
+}
+
+impl Display for Vector2i {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&("(" .to_owned() + self.x.to_string().as_str() + ", " + self.y.to_string().as_str() + ")"))
+    }
 }
 
 impl ops::Add<Vector2i> for Vector2i {
